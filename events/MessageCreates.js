@@ -1,3 +1,5 @@
+console.log('✅ Evento messageCreate cargado');
+
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 module.exports = {
@@ -119,4 +121,5 @@ else if (contenido === config.prefijo + 'clean') {
     }
   },
 };
+
 
