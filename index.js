@@ -6,6 +6,7 @@ const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
 const fs = require('fs');
+const path = require('path');
 
 // ===============================
 // ✅ Inicializa cliente de Discord
@@ -24,21 +25,28 @@ const client = new Client({
 // ✅ Inicializa el reproductor
 // ===============================
 const player = new Player(client);
-(async () => await player.extractors.loadMulti(DefaultExtractors))();
+(async () => {
+  await player.extractors.loadMulti(DefaultExtractors);
+})();
 
 // ===============================
 // ✅ Colección de comandos
 // ===============================
 client.commands = new Collection();
-const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
+const commandsPath = path.join(__dirname, 'commands');
 const commandsJSON = [];
 
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  if (command.data) {
-    client.commands.set(command.data.name, command);
-    commandsJSON.push(command.data.toJSON());
+if (fs.existsSync(commandsPath)) {
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+  for (const file of commandFiles) {
+    const command = require(path.join(commandsPath, file));
+    if (command.data) {
+      client.commands.set(command.data.name, command);
+      commandsJSON.push(command.data.toJSON());
+    }
   }
+} else {
+  console.warn('⚠️  Carpeta ./commands no encontrada. Saltando registro de comandos.');
 }
 
 // ===============================
@@ -48,12 +56,16 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
   try {
-    console.log('📦 Registrando comandos slash...');
-    await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-      { body: commandsJSON }
-    );
-    console.log('✅ Comandos slash registrados correctamente.');
+    if (process.env.CLIENT_ID && process.env.GUILD_ID) {
+      console.log('📦 Registrando comandos slash...');
+      await rest.put(
+        Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+        { body: commandsJSON }
+      );
+      console.log('✅ Comandos slash registrados correctamente.');
+    } else {
+      console.warn('⚠️  CLIENT_ID o GUILD_ID no definidos. Saltando registro de comandos.');
+    }
   } catch (error) {
     console.error('❌ Error registrando comandos slash:', error);
   }
@@ -62,14 +74,19 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 // ===============================
 // ✅ Manejo de eventos del cliente
 // ===============================
-const eventFiles = fs.readdirSync("./events").filter(file => file.endsWith(".js"));
-for (const file of eventFiles) {
-  const event = require(`./events/${file}`);
-  if (event.once) {
-    client.once(event.name, (...args) => event.execute(...args, client, player));
-  } else {
-    client.on(event.name, (...args) => event.execute(...args, client, player));
+const eventsPath = path.join(__dirname, 'events');
+if (fs.existsSync(eventsPath)) {
+  const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+  for (const file of eventFiles) {
+    const event = require(path.join(eventsPath, file));
+    if (event.once) {
+      client.once(event.name, (...args) => event.execute(...args, client, player));
+    } else {
+      client.on(event.name, (...args) => event.execute(...args, client, player));
+    }
   }
+} else {
+  console.warn('⚠️  Carpeta ./events no encontrada. Saltando carga de eventos.');
 }
 
 // ===============================
