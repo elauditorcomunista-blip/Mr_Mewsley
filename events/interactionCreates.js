@@ -3,10 +3,21 @@ module.exports = {
   async execute(interaction, client, player, config) {
     // 🔹 Si es un botón
     if (interaction.isButton()) {
-      if (interaction.customId === 'whisky') return await interaction.reply('🥃 Excelente elección.');
-      if (interaction.customId === 'ginebra') return await interaction.reply('🍸 La ginebra es cosa de elegancia.');
-      if (interaction.customId === 'ron') return await interaction.reply('🏴‍☠️ Ron, ¿eh? Que los piratas te acompañen.');
-      return; // salimos para no continuar al siguiente bloque
+      // Borrar el mensaje del menú si se puede
+      if (interaction.message.deletable) {
+        await interaction.message.delete();
+      }
+
+      // Responder al usuario de forma privada (ephemeral)
+      if (interaction.customId === 'whisky') {
+        await interaction.reply({ content: '🥃 Excelente elección.', ephemeral: true });
+      } else if (interaction.customId === 'ginebra') {
+        await interaction.reply({ content: '🍸 La ginebra es cosa de elegancia.', ephemeral: true });
+      } else if (interaction.customId === 'ron') {
+        await interaction.reply({ content: '🏴‍☠️ Ron, ¿eh? Que los piratas te acompañen.', ephemeral: true });
+      }
+
+      return; // salir para no continuar al siguiente bloque
     }
 
     // 🔹 Si es un comando slash
