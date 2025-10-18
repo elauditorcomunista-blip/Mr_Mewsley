@@ -100,3 +100,9 @@ process.on('uncaughtException', (error) => {
 // ✅ Iniciar sesión del bot
 // ===============================
 client.login(process.env.DISCORD_TOKEN);
+
+const express = require('express');
+const app = express();
+app.get('/', (req, res) => res.send('Bot online y funcionando.'));
+app.listen(process.env.PORT || 3000, () => console.log('🌐 Servidor web escuchando en Render.'));
+
