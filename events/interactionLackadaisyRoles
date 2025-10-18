@@ -1,0 +1,59 @@
+// ===============================
+// 🦝 Sistema de personajes Lackadaisy
+// ===============================
+
+// Máximo un usuario por personaje
+const personajeLimite = {
+  rocky: 1,
+  mordecai: 1,
+  ivy: 1,
+  freckle: 1,
+  mitzi: 1
+};
+
+// Almacenamiento temporal (se reinicia al reiniciar el bot)
+const personajeAsignado = {
+  rocky: [],
+  mordecai: [],
+  ivy: [],
+  freckle: [],
+  mitzi: []
+};
+
+module.exports = {
+  name: 'interactionCreate',
+
+  async execute(interaction) {
+    if (!interaction.isStringSelectMenu()) return;
+    if (interaction.customId !== 'menu_personajes') return;
+
+    const elegido = interaction.values[0];
+    const userId = interaction.user.id;
+
+    // 🧩 Verifica si ya tiene un personaje
+    for (const personaje in personajeAsignado) {
+      if (personajeAsignado[personaje].includes(userId)) {
+        return await interaction.reply({
+          content: `⚠️ Ya tienes un personaje asignado (**${personaje}**). No puedes elegir otro.`,
+          ephemeral: true
+        });
+      }
+    }
+
+    // 🚫 Si el personaje ya está ocupado
+    if (personajeAsignado[elegido].length >= personajeLimite[elegido]) {
+      return await interaction.reply({
+        content: `❌ El personaje **${elegido}** ya está ocupado.`,
+        ephemeral: true
+      });
+    }
+
+    // ✅ Asigna el personaje
+    personajeAsignado[elegido].push(userId);
+
+    await interaction.reply({
+      content: `✅ Se te ha asignado el personaje **${elegido.charAt(0).toUpperCase() + elegido.slice(1)}**.`,
+      ephemeral: true
+    });
+  }
+};
