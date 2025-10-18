@@ -6,7 +6,9 @@ const { Client, GatewayIntentBits, Collection, REST, Routes } = require('discord
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
 const fs = require('fs');
-const config = require('./config.json'); // 👈 AQUI SE IMPORTA TU CONFIG
+const config = require('./config.json');
+const express = require('express');
+const axios = require('axios'); // 👈 para el autoping
 
 // ===============================
 // ✅ Inicializa cliente de Discord
@@ -51,7 +53,7 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
   try {
     console.log('📦 Registrando comandos slash...');
     await rest.put(
-      Routes.applicationGuildCommands(config.clientId, config.guildId), // 👈 SE USA TU CONFIG.JSON
+      Routes.applicationGuildCommands(config.clientId, config.guildId),
       { body: commandsJSON }
     );
     console.log('✅ Comandos slash registrados correctamente.');
@@ -67,9 +69,9 @@ const eventFiles = fs.readdirSync("./events").filter(file => file.endsWith(".js"
 for (const file of eventFiles) {
   const event = require(`./events/${file}`);
   if (event.once) {
-    client.once(event.name, (...args) => event.execute(...args, client, player, config)); // 👈 SE PASA CONFIG
+    client.once(event.name, (...args) => event.execute(...args, client, player, config));
   } else {
-    client.on(event.name, (...args) => event.execute(...args, client, player, config)); // 👈 TAMBIÉN AQUÍ
+    client.on(event.name, (...args) => event.execute(...args, client, player, config));
   }
 }
 
@@ -101,8 +103,23 @@ process.on('uncaughtException', (error) => {
 // ===============================
 client.login(process.env.DISCORD_TOKEN);
 
-const express = require('express');
+// ===============================
+// 🌐 Servidor Express para Render
+// ===============================
 const app = express();
 app.get('/', (req, res) => res.send('Bot online y funcionando.'));
-app.listen(process.env.PORT || 3000, () => console.log('🌐 Servidor web escuchando en Render.'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🌐 Servidor web escuchando en Render (puerto ${PORT})`));
 
+// ===============================
+// 🔁 AutoPing cada 4 minutos
+// ===============================
+const url = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+setInterval(async () => {
+  try {
+    await axios.get(url);
+    console.log(`🔁 AutoPing exitoso a ${url}`);
+  } catch (error) {
+    console.error('⚠️ Error en el AutoPing:', error.message);
+  }
+}, 240000); // 4 minutos
