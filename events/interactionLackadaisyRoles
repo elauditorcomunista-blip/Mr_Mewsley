@@ -56,4 +56,19 @@ module.exports = {
       ephemeral: true
     });
   }
+
+const { handleSelect } = require('./commands/roles/rol.js');
+
+client.on('interactionCreate', async (interaction) => {
+  if (interaction.isCommand()) {
+    // Aquí cargas tus comandos slash
+    const command = client.commands.get(interaction.commandName);
+    if (command) await command.execute(interaction);
+  }
+
+  if (interaction.isStringSelectMenu()) {
+    await handleSelect(interaction);
+  }
+});
+
 };
