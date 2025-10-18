@@ -97,6 +97,19 @@ process.on('uncaughtException', (error) => {
 });
 
 // ===============================
+// 🌐 Mantener Render feliz
+// ===============================
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => res.send('Bot is running.'));
+app.listen(process.env.PORT || 3000, () => {
+  console.log('🌐 Servidor web iniciado en Render.');
+});
+
+
+// ===============================
 // ✅ Iniciar sesión del bot
 // ===============================
 client.login(process.env.DISCORD_TOKEN);
+
