@@ -2,11 +2,11 @@ const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, EmbedBui
 
 // 🧩 Lista de personajes (agrega más fácilmente siguiendo el formato)
 const personajes = [
-  { nombre: 'Rocky Rickaby', rolId: 'ID_DEL_ROL_1' },
-  { nombre: 'Freckle McMurray', rolId: 'ID_DEL_ROL_2' },
-  { nombre: 'Ivy Pepper', rolId: 'ID_DEL_ROL_3' },
-  { nombre: 'Mitzi May', rolId: 'ID_DEL_ROL_4' },
-  { nombre: 'Mordecai Heller', rolId: 'ID_DEL_ROL_5' }
+  { nombre: 'Rocky Rickaby', rolId: '1429227897901551706' },
+  { nombre: 'Freckle McMurray', rolId: '1429227744352403506' },
+  { nombre: 'Ivy Pepper', rolId: '1429228050868080741' },
+  { nombre: 'Mitzi May', rolId: '1429228189405806764' },
+  { nombre: 'Mordecai Heller', rolId: '1429228445921054770' }
 ];
 
 // 🧠 Máximo de usuarios permitidos por personaje
