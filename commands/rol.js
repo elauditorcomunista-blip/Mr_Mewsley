@@ -1,6 +1,12 @@
-const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder } = require('discord.js');
+const {
+  SlashCommandBuilder,
+  ActionRowBuilder,
+  StringSelectMenuBuilder,
+  EmbedBuilder,
+  InteractionResponseFlags
+} = require('discord.js');
 
-// 🧩 Lista de personajes (agrega más fácilmente siguiendo el formato)
+// 🧩 Lista de personajes (puedes agregar más siguiendo este formato)
 const personajes = [
   { nombre: 'Rocky Rickaby', rolId: '1429227897901551706' },
   { nombre: 'Freckle McMurray', rolId: '1429227744352403506' },
@@ -9,7 +15,7 @@ const personajes = [
   { nombre: 'Mordecai Heller', rolId: '1429228445921054770' }
 ];
 
-// 🧠 Máximo de usuarios permitidos por personaje
+// 🎭 Máximo de usuarios permitidos por personaje
 const LIMITE = 2;
 
 module.exports = {
@@ -36,12 +42,17 @@ module.exports = {
       .setDescription('Elige el personaje que quieres interpretar.\nCada rol puede tener **hasta 2 usuarios.**')
       .setColor('#f5c542');
 
-    await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+    // ✅ Usamos el nuevo sistema de flags para respuestas efímeras
+    await interaction.reply({
+      embeds: [embed],
+      components: [row],
+      flags: InteractionResponseFlags.Ephemeral
+    });
   },
 };
 
 // ============================
-// 📦 Manejador del menú
+// ⚙️ Manejador del menú
 // ============================
 module.exports.handleSelect = async (interaction) => {
   if (!interaction.isStringSelectMenu() || interaction.customId !== 'menuPersonaje') return;
@@ -51,24 +62,25 @@ module.exports.handleSelect = async (interaction) => {
   const rol = guild.roles.cache.get(rolId);
 
   if (!rol) {
-    return interaction.reply({ content: '❌ No se encontró el rol seleccionado.', ephemeral: true });
-  }
-
-  // Contar cuántos miembros tienen el rol
-  const miembrosConRol = rol.members.size;
-
-  // Verificar si se excede el límite
-  if (miembrosConRol >= LIMITE) {
     return interaction.reply({
-      content: `❌ Todos los espacios para **${rol.name}** están ocupados.`,
-      ephemeral: true
+      content: '❌ No se encontró el rol seleccionado.',
+      flags: InteractionResponseFlags.Ephemeral
     });
   }
 
-  // Asignar el rol al usuario
+  const miembrosConRol = rol.members.size;
+  const LIMITE = 2;
+
+  if (miembrosConRol >= LIMITE) {
+    return interaction.reply({
+      content: `❌ Todos los espacios para **${rol.name}** están ocupados.`,
+      flags: InteractionResponseFlags.Ephemeral
+    });
+  }
+
   const miembro = interaction.member;
 
-  // Quitar roles anteriores de la lista
+  // ❌ Evitar que el usuario tenga múltiples personajes
   const rolesLackadaisy = personajes.map(p => p.rolId);
   const rolesARemover = miembro.roles.cache.filter(r => rolesLackadaisy.includes(r.id));
 
@@ -76,11 +88,10 @@ module.exports.handleSelect = async (interaction) => {
     await miembro.roles.remove(id);
   }
 
-  // Agregar el nuevo rol
   await miembro.roles.add(rolId);
 
   await interaction.reply({
     content: `✅ Se te ha asignado el personaje **${rol.name}**.`,
-    ephemeral: true
+    flags: InteractionResponseFlags.Ephemeral
   });
 };
